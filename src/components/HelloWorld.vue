@@ -1,43 +1,49 @@
 <template>
   <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel" target="_blank" rel="noopener">babel</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint" target="_blank" rel="noopener">eslint</a></li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank" rel="noopener">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank" rel="noopener">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
-      <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank" rel="noopener">vue-devtools</a></li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">awesome-vue</a></li>
+    <ul class="list-group list-group-flush">
+      <li v-for="post in posts" @click="openImage(post.data.url)" :key="post.data.id" class="list-group-item flex-container">
+        <img :src="post.data.thumbnail" alt="thumb" class="thumbnail">
+        <div>{{ post.data.title }}</div>
+      </li>
     </ul>
   </div>
 </template>
 
 <script>
+const axios = require("axios");
+// eslint-disable-next-line
+const { remote, ipcRenderer } = require("electron")
+
 export default {
   name: 'HelloWorld',
   props: {
     msg: String
+  },
+  data() {
+    return {
+      posts: []
+    }
+  },
+  created(){
+    axios.get("https://reddit.com/r/EarthPorn.json")
+      .then(response => {
+         this.posts = response.data.data.children
+      })
+      .catch(error => {
+        console.log(error);
+      })
+  },
+  methods: {
+    openImage(image) {
+      console.log(image)
+      ipcRenderer.send("toggle-image", image)
+    }
   }
 }
 </script>
+
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
@@ -54,5 +60,45 @@ li {
 }
 a {
   color: #42b983;
+}
+.list-group {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  padding-left: 0;
+  margin-bottom: 0;
+}
+.list-group-item {
+  position: relative;
+  display: block;
+  padding: 0.75rem 1.25rem;
+  margin-bottom: -1px;
+  background-color: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.125);
+}
+.list-group-flush .list-group-item {
+  border-right: 0;
+  border-left: 0;
+  border-radius: 0;
+}
+.list-group-flush:first-child .list-group-item:first-child {
+  border-top: 0;
+}
+.flex-container {
+  display: flex;
+  align-items: center;
+}
+.thumbnail {
+  width: 60px;
+  height: 60px;
+  border-radius: 30px;
+  margin-right: 16px;
+}
+.list-group-item {
+  cursor: pointer
+}
+.list-group-item:hover {
+  background-color: #eee;
 }
 </style>
